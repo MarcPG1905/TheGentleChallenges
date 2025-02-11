@@ -1,0 +1,7 @@
+{
+  "pack": {
+    "pack_format": 57,
+    "supported_formats": { "min_inclusive": 18, "max_inclusive": 61 },
+    "description": "Resource pack for the challenges."
+  }
+}
