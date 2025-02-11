@@ -1,0 +1,27 @@
+### Plugin Name ###
+name: TheGentleChallenges
+
+### Plugin Description ###
+description: Challenge plugin for TheGentleCrafter, made my MarcPG.
+
+### Build Version ###
+version: ${version}
+
+### Main Class ###
+main: com.marcpg.tgc.TheGentleChallenges
+
+### Loader Class ###
+loader: com.marcpg.tgc.TheGentleChallengeLoader
+
+### PaperAPI Version ###
+api-version: '1.21'
+
+### Developers of the Plugin ###
+authors:
+  - MarcPG
+
+### Plugin Website ###
+website: https://marcpg.com/
+
+### Logging Prefix ###
+prefix: TGC

@@ -1,0 +1,38 @@
+aggressive-mobs:
+  cat: 5.5
+  cow: 5.0
+  donkey: 2.5
+  fox: 3.5
+  glow_squid: 3.2
+  horse: 4.2
+  mooshroom: 3.8
+  mule: 3.0
+  ocelot: 6.0
+  pig: 3.5
+  sheep: 2.5
+  skeleton_horse: 3.5
+  squid: 3.2
+  turtle: 4.0
+  villager: 5.2
+  wandering_trader: 5.0
+
+monster-army-battle:
+  randomizer-mode: team # global; team; player
+  collection-time-seconds: 3600 # 3600s = 1h
+  arena-spawn: [ -44, 71, 104 ]
+  arena-bounds:
+    - [ 10, 55 ]
+    - [ -35, 55 ]
+    - [ -75, 95 ]
+    - [ -75, 115 ]
+    - [ -35, 155 ]
+    - [ 10, 155 ]
+    - [ 45, 115 ]
+    - [ 45, 90 ]
+
+
+random-teams: false
+teams:
+  - [ "Example1", "Example2" ]
+  - [ "SomeExample", "YetAnotherExampleUser", "WowAThirdUserInTeam" ]
+  - [ "SomeUserForTeam3", "AnotherOne" ]
