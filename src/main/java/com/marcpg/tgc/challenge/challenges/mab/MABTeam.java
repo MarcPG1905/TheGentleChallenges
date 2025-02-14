@@ -133,14 +133,15 @@ public class MABTeam {
         float progress = (float) mobsLeft / currentWaveTotal;
 
         bossBar.name(Component.text(mobsLeft + " Mobs Übrig", TextColor.color(progress, Math.abs(progress - 1.0f), 0.0f)));
-        bossBar.progress(progress);
+        bossBar.progress(Math.clamp(progress, 0.0f, 1.0f));
         bossBar.color(color(progress));
     }
 
     public void update() {
-        long mobsLeft = entitiesRemaining().count();
-        if (mobsLeft <= 0 && currentWaveEntities.isEmpty())
-            waveDone();
+        Bukkit.getScheduler().runTaskLater(TheGentleChallenges.PLUGIN, () -> {
+            if (entitiesRemaining().findAny().isEmpty() && currentWaveEntities.isEmpty())
+                waveDone();
+        }, 20);
     }
 
     public void waveDone() {

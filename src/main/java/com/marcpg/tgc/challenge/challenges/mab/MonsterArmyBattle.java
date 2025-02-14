@@ -153,6 +153,18 @@ public class MonsterArmyBattle extends Challenge implements Listener {
         }
     }
 
+    @EventHandler(ignoreCancelled = true)
+    public void onCreatureSpawn(@NotNull CreatureSpawnEvent event) {
+        if (currentStage == Stage.BATTLE && event.getSpawnReason() == CreatureSpawnEvent.SpawnReason.SLIME_SPLIT) {
+            event.getEntity().setMetadata("battle", new FixedMetadataValue(TheGentleChallenges.PLUGIN, true));
+
+            MABTeam team = teams.get(UUID.fromString(event.getEntity().getWorld().getName().replace("mab-team-battle-", "")));
+            if (team == null || team.finished != null) return;
+
+            team.updateBossBar();
+        }
+    }
+
     // Make events do nothing.
     @Override @EventHandler(ignoreCancelled = true)
     public void onEnderDragonChangePhaseEvent(@NotNull EnderDragonChangePhaseEvent event) {}
