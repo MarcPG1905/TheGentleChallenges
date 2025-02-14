@@ -24,6 +24,8 @@ import org.bukkit.event.entity.PlayerDeathEvent;
 import org.bukkit.event.player.PlayerRespawnEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.metadata.FixedMetadataValue;
+import org.bukkit.scoreboard.Scoreboard;
+import org.bukkit.scoreboard.Team;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -37,11 +39,23 @@ public class MonsterArmyBattle extends Challenge implements Listener {
             .filter(m -> !m.isEmpty() && m.isItem() && !m.isLegacy())
             .toList();
 
+    public static Team GLOW_TEAM;
+
     public LinkedHashMap<UUID, MABTeam> teams;
     public LinkedHashMap<UUID, MABPlayer> players;
     public LinkedHashMap<MABTeam, MABTeam> teamLinks;
 
     protected Stage currentStage = Stage.COLLECTION;
+
+    static {
+        Scoreboard scoreboard = Bukkit.getScoreboardManager().getMainScoreboard();
+
+        GLOW_TEAM = scoreboard.getTeam("glow");
+        if (GLOW_TEAM == null) {
+            GLOW_TEAM = scoreboard.registerNewTeam("glow");
+            GLOW_TEAM.color(NamedTextColor.RED);
+        }
+    }
 
     @EventHandler(ignoreCancelled = true)
     public void onEntityDeath(@NotNull EntityDeathEvent event) {
@@ -122,8 +136,8 @@ public class MonsterArmyBattle extends Challenge implements Listener {
     }
 
     @EventHandler(ignoreCancelled = true)
-    public void onPlayerDamage(PlayerEvent.PlayerDamageEvent event) {
-        if (currentStage == Stage.CONFIGURATION) {
+    public void onEntityDamage(@NotNull EntityDamageEvent event) {
+        if (event.getEntity() instanceof Player && currentStage == Stage.CONFIGURATION) {
             event.setDamage(0.0);
             event.setCancelled(true);
         }

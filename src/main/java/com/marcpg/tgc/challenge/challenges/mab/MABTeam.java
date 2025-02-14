@@ -8,6 +8,7 @@ import com.marcpg.libpg.util.FileUtils;
 import com.marcpg.tgc.Configuration;
 import com.marcpg.tgc.TheGentleChallenges;
 import com.marcpg.tgc.challenge.ChallengeManager;
+import com.marcpg.tgc.util.Configuration;
 import com.marcpg.tgc.util.Utilities;
 import net.kyori.adventure.bossbar.BossBar;
 import net.kyori.adventure.text.Component;
@@ -15,11 +16,9 @@ import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.format.TextColor;
 import net.kyori.adventure.text.serializer.gson.GsonComponentSerializer;
 import net.kyori.adventure.title.Title;
+import net.kyori.adventure.util.TriState;
 import org.bukkit.*;
-import org.bukkit.entity.Entity;
-import org.bukkit.entity.EntitySnapshot;
-import org.bukkit.entity.LivingEntity;
-import org.bukkit.entity.Player;
+import org.bukkit.entity.*;
 import org.bukkit.metadata.FixedMetadataValue;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
@@ -30,6 +29,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.*;
 import java.util.function.Consumer;
+import java.util.stream.Stream;
 
 public class MABTeam {
     public static final Random RANDOM = new Random();
@@ -86,6 +86,7 @@ public class MABTeam {
         switch (target) {
             case COLLECTION -> playerActions(p -> p.teleport(collectionWorlds.left().getSpawnLocation()));
             case CONFIGURATION -> {
+                playerActions(p -> p.sendMessage(Component.text("Die Konfiguration startet...", NamedTextColor.DARK_GRAY)));
                 players.forEach(MABPlayer::openConfiguration);
                 playerActions(Utilities::reset);
             }
@@ -158,27 +159,40 @@ public class MABTeam {
             }));
 
             int oldWave = wave;
-
             currentWaveEntities = waves.entities(wave);
             currentWaveTotal = currentWaveEntities.size();
-            Bukkit.getScheduler().runTaskTimer(TheGentleChallenges.PLUGIN, r -> {
-                if (currentWaveEntities.isEmpty()) {
-                    Bukkit.getScheduler().runTaskLater(TheGentleChallenges.PLUGIN, () -> {
-                        if (wave == oldWave) {
-                            battleWorld.getLivingEntities().stream().filter(e -> e.hasMetadata("battle"))
-                                    .forEach(e -> e.addPotionEffect(new PotionEffect(PotionEffectType.GLOWING, 1200, 0)));
-                        }
-                    }, 1200); // 1 Minute
-                    r.cancel();
-                } else {
-                    Entity e = currentWaveEntities.removeLast().createEntity(battleWorld);
-                    e.setMetadata("battle", new FixedMetadataValue(TheGentleChallenges.PLUGIN, true));
-                    e.spawnAt(randomSpawnLocation(battleWorld));
 
-                    updateBossBar();
-                }
-            }, 20, 10);
+            if (currentWaveTotal == 0) {
+                playerActions(p -> p.sendMessage(Component.text("Diese Wave hatte keine Monster!", NamedTextColor.YELLOW)));
+                waveDone();
+            } else if (currentWaveTotal == 1) {
+                playerActions(p -> p.sendMessage(Component.text("Diese Wave hat nur ein Monster!", NamedTextColor.YELLOW)));
+
+                spawn(currentWaveEntities.removeLast());
+                scheduleGlowing(oldWave);
+                updateBossBar();
+            } else {
+                Bukkit.getScheduler().runTaskTimer(TheGentleChallenges.PLUGIN, r -> {
+                    if (currentWaveEntities.isEmpty()) {
+                        scheduleGlowing(oldWave);
+                        r.cancel();
+                        update();
+                    } else {
+                        spawn(currentWaveEntities.removeLast());
+                        updateBossBar();
+                    }
+                }, 20, 10);
+            }
         }
+    }
+
+    private void scheduleGlowing(int oldWave) {
+        Bukkit.getScheduler().runTaskLater(TheGentleChallenges.PLUGIN, () -> {
+            if (wave == oldWave) {
+                entitiesRemaining().forEach(e -> e.addPotionEffect(new PotionEffect(PotionEffectType.GLOWING, 1200, 0)));
+                scheduleGlowing(oldWave);
+            }
+        }, 1200); // 1 Minute
     }
 
     private BossBar.Color color(float progress) {
@@ -219,5 +233,22 @@ public class MABTeam {
             y = world.getHighestBlockYAt(x, z);
         } while (!Configuration.MAB_SPAWN_AREA.contains(x, z) || y >= 75 || y <= 50 || Configuration.MAB_SPAWN.distance(new Cord(x, y, z)) < 10);
         return new Location(battleWorld, x, y + 1.5, z);
+    }
+
+    private void spawn(@NotNull EntitySnapshot snapshot) {
+        Entity e = snapshot.createEntity(battleWorld);
+        if (!(e instanceof LivingEntity)) return;
+
+        e.setMetadata("battle", new FixedMetadataValue(TheGentleChallenges.PLUGIN, true));
+        MonsterArmyBattle.GLOW_TEAM.addEntity(e);
+
+        if (e instanceof Zombie zombie)
+            zombie.setShouldBurnInDay(false);
+        if (e instanceof AbstractSkeleton skeleton)
+            skeleton.setShouldBurnInDay(false);
+        if (e instanceof Phantom phantom)
+            phantom.setShouldBurnInDay(false);
+
+        e.spawnAt(randomSpawnLocation(battleWorld));
     }
 }
