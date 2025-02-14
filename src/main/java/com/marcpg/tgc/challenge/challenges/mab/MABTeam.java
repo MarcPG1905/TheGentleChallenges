@@ -61,18 +61,20 @@ public class MABTeam {
                 Bukkit.createWorld(WorldCreator.name("mab-team-collection-nether-" + uuid).copy(baseCollectionWorlds.middle())),
                 Bukkit.createWorld(WorldCreator.name("mab-team-collection-end-" + uuid).copy(baseCollectionWorlds.right())));
 
-        try {
-            Path world = Bukkit.getWorldContainer().toPath().resolve("mab-team-battle-" + uuid);
-            FileUtils.moveRecursively(Bukkit.getWorldContainer().toPath().resolve("base-battle"), world);
-            Files.deleteIfExists(world.resolve("uid.dat"));
-            Files.deleteIfExists(world.resolve("session.lock"));
-        } catch (Exception e) {
-            TheGentleChallenges.LOG.error("Could not copy battle world!", e);
-        }
+        if (!collectionWorlds.isFull() || battleWorld == null)
+            throw new RuntimeException("Worlds could not be created.");
 
-        this.battleWorld = Bukkit.createWorld(WorldCreator.name("mab-team-battle-" + uuid));
+        collectionWorlds.all(o -> {
+            World w = (World) o;
+            w.setDifficulty(Difficulty.NORMAL);
+            w.setGameRule(GameRule.ANNOUNCE_ADVANCEMENTS, false);
+        });
 
-        if (battleWorld == null || !collectionWorlds.isFull()) throw new RuntimeException("Worlds could not be created.");
+        this.battleWorld.setDifficulty(Difficulty.NORMAL);
+        this.battleWorld.setGameRule(GameRule.DO_MOB_LOOT, false);
+        this.battleWorld.setGameRule(GameRule.DO_MOB_SPAWNING, false);
+        this.battleWorld.setGameRule(GameRule.MOB_GRIEFING, false);
+        this.battleWorld.setGameRule(GameRule.DO_FIRE_TICK, false);
     }
 
     public void addEntity(LivingEntity entity) {
@@ -127,7 +129,7 @@ public class MABTeam {
     }
 
     public void updateBossBar() {
-        long mobsLeft = battleWorld.getLivingEntities().stream().filter(e -> e.hasMetadata("battle")).count();
+        long mobsLeft = entitiesRemaining().count();
         float progress = (float) mobsLeft / currentWaveTotal;
 
         bossBar.name(Component.text(mobsLeft + " Mobs Übrig", TextColor.color(progress, Math.abs(progress - 1.0f), 0.0f)));
@@ -136,7 +138,7 @@ public class MABTeam {
     }
 
     public void update() {
-        long mobsLeft = battleWorld.getLivingEntities().stream().filter(e -> e.hasMetadata("battle")).count();
+        long mobsLeft = entitiesRemaining().count();
         if (mobsLeft <= 0 && currentWaveEntities.isEmpty())
             waveDone();
     }
@@ -250,5 +252,9 @@ public class MABTeam {
             phantom.setShouldBurnInDay(false);
 
         e.spawnAt(randomSpawnLocation(battleWorld));
+    }
+
+    private Stream<LivingEntity> entitiesRemaining() {
+        return battleWorld.getLivingEntities().stream().filter(e -> e.hasMetadata("battle"));
     }
 }

@@ -18,7 +18,7 @@ public final class ChallengeManager {
             "zero-hearts", ZeroHeartsChallenge.class);
 
     public static Challenge CURRENT_CHALLENGE;
-    public static Map<String, Object> PROPERTIES = new HashMap<>();
+    public static final Map<String, Object> PROPERTIES = new HashMap<>();
 
     public static boolean running() {
         return CURRENT_CHALLENGE != null && CURRENT_CHALLENGE.running;

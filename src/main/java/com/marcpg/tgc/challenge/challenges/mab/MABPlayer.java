@@ -46,6 +46,8 @@ public class MABPlayer {
     }
 
     public void kill(@NotNull LivingEntity entity) {
+        if (entity.getType() == EntityType.CREAKING || entity.getType() == EntityType.ENDER_DRAGON) return;
+
         entity.setHealth(Objects.requireNonNull(entity.getAttribute(Attribute.MAX_HEALTH)).getBaseValue());
         if (entities.containsKey(entity.getType())) {
             entities.get(entity.getType()).add(entity.createSnapshot());

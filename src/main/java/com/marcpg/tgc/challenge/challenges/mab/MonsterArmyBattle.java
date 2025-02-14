@@ -1,7 +1,6 @@
 package com.marcpg.tgc.challenge.challenges.mab;
 
 import com.destroystokyo.paper.event.player.PlayerPostRespawnEvent;
-import com.marcpg.libpg.event.PlayerEvent;
 import com.marcpg.libpg.storing.tuple.triple.Triple;
 import com.marcpg.tgc.Configuration;
 import com.marcpg.tgc.TheGentleChallenges;
@@ -18,17 +17,15 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.block.BlockPlaceEvent;
-import org.bukkit.event.entity.EnderDragonChangePhaseEvent;
-import org.bukkit.event.entity.EntityDeathEvent;
-import org.bukkit.event.entity.PlayerDeathEvent;
+import org.bukkit.event.entity.*;
 import org.bukkit.event.player.PlayerRespawnEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.metadata.FixedMetadataValue;
 import org.bukkit.scoreboard.Scoreboard;
 import org.bukkit.scoreboard.Team;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 
+import java.io.File;
 import java.util.*;
 
 public class MonsterArmyBattle extends Challenge implements Listener {

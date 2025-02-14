@@ -3,6 +3,7 @@ package com.marcpg.tgc;
 import com.marcpg.libpg.MinecraftLibPG;
 import com.marcpg.libpg.storage.JsonUtils;
 import com.marcpg.tgc.challenge.ChallengeManager;
+import com.marcpg.tgc.util.Configuration;
 import io.papermc.paper.plugin.lifecycle.event.types.LifecycleEvents;
 import org.bukkit.event.Listener;
 import org.bukkit.plugin.java.JavaPlugin;
@@ -11,6 +12,7 @@ import xyz.xenondevs.invui.InvUI;
 
 import java.nio.file.Path;
 import java.util.List;
+import java.util.Map;
 
 @SuppressWarnings("UnstableApiUsage")
 public final class TheGentleChallenges extends JavaPlugin implements Listener {
@@ -34,6 +36,7 @@ public final class TheGentleChallenges extends JavaPlugin implements Listener {
             event.registrar().register(Commands.resourcePackCommand(), "Manage the applied texture/resource pack.", List.of("texture-pack"));
         });
 
+        ChallengeManager.PROPERTIES.putAll(JsonUtils.loadSafe(DATA_DIR.resolve("properties.json").toFile(), Map.of()));
     }
 
     @Override
