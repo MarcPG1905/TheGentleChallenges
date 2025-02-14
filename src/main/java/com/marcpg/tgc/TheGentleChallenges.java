@@ -20,9 +20,9 @@ public final class TheGentleChallenges extends JavaPlugin implements Listener {
 
     @Override
     public void onEnable() {
-        InvUI.getInstance().setPlugin(this);
         MinecraftLibPG.init(this);
         Configuration.init(this);
+        InvUI.getInstance().setPlugin(this);
 
         PLUGIN = this;
         LOG = getSLF4JLogger();

@@ -1,4 +1,4 @@
-package com.marcpg.tgc;
+package com.marcpg.tgc.util;
 
 import com.marcpg.libpg.storing.Cord;
 import com.marcpg.tgc.challenge.challenges.mab.MonsterArmyBattle;
@@ -24,7 +24,7 @@ public class Configuration {
         CONFIG = plugin.getConfig();
 
         MAB_TEAM_RANDOMIZATION = CONFIG.getBoolean("random-teams");
-        MAB_ITEM_RANDOMIZATION = MonsterArmyBattle.RandomizerType.valueOf(Objects.requireNonNullElse(CONFIG.getString("monster-army-battle.randomizer"), "global").toUpperCase());
+        MAB_ITEM_RANDOMIZATION = MonsterArmyBattle.RandomizerType.valueOf(Objects.requireNonNullElse(CONFIG.getString("monster-army-battle.randomizer-mode"), "team").toUpperCase());
         MAB_SPAWN = Cord.ofList(CONFIG.getIntegerList("monster-army-battle.arena-spawn"));
 
         MAB_SPAWN_AREA = new Polygon();

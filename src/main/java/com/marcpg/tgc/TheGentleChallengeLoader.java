@@ -14,7 +14,7 @@ public final class TheGentleChallengeLoader implements PluginLoader {
     public void classloader(@NotNull PluginClasspathBuilder classpathBuilder) {
         MavenLibraryResolver resolver = new MavenLibraryResolver();
         resolver.addRepository(new RemoteRepository.Builder("xenondevs", "default", "https://repo.xenondevs.xyz/releases/").build());
-        resolver.addDependency(new Dependency(new DefaultArtifact("xyz.xenondevs.invui:invui:pom:1.43"), null));
+        resolver.addDependency(new Dependency(new DefaultArtifact("xyz.xenondevs.invui:invui:pom:1.44"), null));
         classpathBuilder.addLibrary(resolver);
     }
 }

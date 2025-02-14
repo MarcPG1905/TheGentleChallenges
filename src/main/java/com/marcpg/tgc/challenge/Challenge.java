@@ -20,6 +20,7 @@ import org.jetbrains.annotations.NotNull;
 
 import java.util.function.Consumer;
 
+@SuppressWarnings("EmptyMethod")
 public abstract class Challenge implements Listener {
     public final Timer timer = new Timer(this);
     public boolean running = false;
@@ -61,7 +62,7 @@ public abstract class Challenge implements Listener {
     public abstract Component name();
     public void initLogic() {}
     public void endLogic() {}
-    public void playerTick(Player player) {}
+    public void playerTick(@SuppressWarnings("unused") Player player) {}
     public void customTick() {}
     public void customSecondTick() {}
 

@@ -24,7 +24,7 @@ dependencies {
     paperweight.paperDevBundle("1.21.4-R0.1-SNAPSHOT")
     implementation("com.marcpg:libpg-paper:1.0.0")
     implementation("com.marcpg:libpg-storage-json:1.0.0")
-    compileOnly("xyz.xenondevs.invui:invui:1.43")
+    compileOnly("xyz.xenondevs.invui:invui:1.44")
 }
 
 tasks {

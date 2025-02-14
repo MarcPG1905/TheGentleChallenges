@@ -201,6 +201,8 @@ public class MonsterArmyBattle extends Challenge implements Listener {
         timer.timer().set(Configuration.CONFIG.getInt("monster-army-battle.collection-time-seconds"));
 
         currentStage(Stage.COLLECTION);
+
+        Bukkit.getServer().getWorlds().forEach(w -> w.setDifficulty(Difficulty.NORMAL));
     }
 
     @Override
@@ -225,6 +227,10 @@ public class MonsterArmyBattle extends Challenge implements Listener {
     public void currentStage(Stage currentStage) {
         this.currentStage = currentStage;
         teams.values().forEach(t -> t.transfer(currentStage));
+    }
+
+    public Stage currentStage() {
+        return currentStage;
     }
 
     public static @NotNull Map<Material, Material> randomShuffle(@NotNull UUID uuid) {

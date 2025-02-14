@@ -16,19 +16,15 @@ import org.jetbrains.annotations.NotNull;
 public class ZeroHeartsChallenge extends Challenge {
     @EventHandler(ignoreCancelled = true)
     public void onEntityDamage(@NotNull EntityDamageEvent event) {
-        if (event.getEntity() instanceof Player player) {
-            if (player.getAbsorptionAmount() <= event.getDamage()) {
-                event.setDamage(500.0);
-            }
-        }
+        if (event.getEntity() instanceof Player player && player.getAbsorptionAmount() <= event.getDamage())
+            event.setDamage(500.0);
     }
 
     @Override
     public void customSecondTick() {
         forEachPlayer(p -> {
-            if (p.getGameMode() == GameMode.SURVIVAL && p.getAbsorptionAmount() <= 0.0) {
+            if (p.getGameMode() == GameMode.SURVIVAL && p.getAbsorptionAmount() <= 0.0)
                 p.damage(500.0);
-            }
         });
     }
 

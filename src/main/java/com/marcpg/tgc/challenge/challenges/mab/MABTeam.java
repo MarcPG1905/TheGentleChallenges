@@ -101,9 +101,7 @@ public class MABTeam {
                     p.playSound(p, Sound.BLOCK_TRIAL_SPAWNER_SPAWN_MOB, 1.0f, 1.0f);
                 });
 
-                System.out.println(mab.nextTeam(this).players);
                 for (MABPlayer player : mab.nextTeam(this).players) {
-                    System.out.println("A");
                     waves.addFrom(player.waves);
                 }
 
@@ -193,6 +191,9 @@ public class MABTeam {
     public void done(Time time) {
         if (finished != null) return;
 
+        if (mab.teams.values().stream().allMatch(t -> t.finished == null))
+            ChallengeManager.PROPERTIES.put("last-winner", GsonComponentSerializer.gson().serialize(Component.text(String.join(" & ", players.stream().map(p -> Bukkit.getOfflinePlayer(p.uuid).getName()).toList()), NamedTextColor.GREEN)));
+
         finished = new Time(time);
         playerActions(p -> {
             p.setGameMode(GameMode.SPECTATOR);
@@ -200,9 +201,6 @@ public class MABTeam {
             p.sendMessage(Component.text("Ihr habt ", NamedTextColor.YELLOW).append(Component.text(finished.getPreciselyFormatted(), NamedTextColor.WHITE)).append(Component.text(" gebraucht.", NamedTextColor.YELLOW)));
             bossBar.removeViewer(p);
         });
-
-        if (mab.teams.values().stream().allMatch(t -> t.finished == null))
-            ChallengeManager.PROPERTIES.put("last-winner", GsonComponentSerializer.gson().serialize(Component.text(String.join(" & ", players.stream().map(p -> Bukkit.getOfflinePlayer(p.uuid).getName()).toList()), NamedTextColor.GREEN)));
 
         if (mab.teams.values().stream().allMatch(t -> t.finished != null))
             mab.end(true);
