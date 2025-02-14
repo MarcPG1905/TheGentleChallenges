@@ -101,9 +101,8 @@ public class MonsterArmyBattle extends Challenge implements Listener {
                 return;
             }
 
-            List<ItemStack> items = randomizeDrops(mabPlayer, new ArrayList<>(event.getBlock().getDrops(event.getPlayer().getInventory().getItemInMainHand(), event.getPlayer())));
             event.setDropItems(false);
-            items.forEach(drop -> l.getWorld().dropItemNaturally(l, drop));
+            l.getWorld().dropItemNaturally(l, new ItemStack(mabPlayer.randomMaterialMap.getOrDefault(event.getBlock().getType(), event.getBlock().getType())));
         }
     }
 
@@ -256,12 +255,12 @@ public class MonsterArmyBattle extends Challenge implements Listener {
         return map;
     }
 
-    public List<ItemStack> randomizeDrops(@NotNull MABPlayer player, @NotNull List<ItemStack> items) {
-        items.replaceAll(item -> {
-            Material mapped = player.randomMaterialMap.get(item.getType());
-            return mapped != null ? new ItemStack(mapped, item.getAmount()) : item;
-        });
-        return items;
+    public void randomizeDrops(@NotNull MABPlayer player, @NotNull List<ItemStack> items) {
+        if (items.isEmpty()) return;
+
+        ItemStack item = new ItemStack(player.randomMaterialMap.get(items.getFirst().getType()));
+        items.clear();
+        items.add(item);
     }
 
     public MABTeam nextTeam(MABTeam team) {
