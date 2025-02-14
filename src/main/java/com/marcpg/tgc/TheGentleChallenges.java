@@ -5,7 +5,9 @@ import com.marcpg.libpg.storage.JsonUtils;
 import com.marcpg.tgc.challenge.ChallengeManager;
 import com.marcpg.tgc.util.Configuration;
 import io.papermc.paper.plugin.lifecycle.event.types.LifecycleEvents;
+import org.bukkit.Material;
 import org.bukkit.event.Listener;
+import org.bukkit.inventory.ItemStack;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.slf4j.Logger;
 import xyz.xenondevs.invui.InvUI;
@@ -29,6 +31,9 @@ public final class TheGentleChallenges extends JavaPlugin implements Listener {
         PLUGIN = this;
         LOG = getSLF4JLogger();
         DATA_DIR = getDataPath();
+
+        // Initialize legacy material support just in case.
+        new ItemStack(Material.LEGACY_AIR);
 
         getServer().getPluginManager().registerEvents(this, this);
         getLifecycleManager().registerEventHandler(LifecycleEvents.COMMANDS, event -> {

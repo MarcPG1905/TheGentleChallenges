@@ -4,8 +4,7 @@ import com.marcpg.libpg.data.time.Time;
 import com.marcpg.libpg.storing.Cord;
 import com.marcpg.libpg.storing.CordMinecraftAdapter;
 import com.marcpg.libpg.storing.tuple.triple.Triple;
-import com.marcpg.libpg.util.FileUtils;
-import com.marcpg.tgc.Configuration;
+import com.marcpg.libpg.util.WorldUtils;
 import com.marcpg.tgc.TheGentleChallenges;
 import com.marcpg.tgc.challenge.ChallengeManager;
 import com.marcpg.tgc.util.Configuration;
@@ -25,8 +24,7 @@ import org.bukkit.potion.PotionEffectType;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.nio.file.Files;
-import java.nio.file.Path;
+import java.io.IOException;
 import java.util.*;
 import java.util.function.Consumer;
 import java.util.stream.Stream;
@@ -49,7 +47,7 @@ public class MABTeam {
     protected ArrayList<EntitySnapshot> currentWaveEntities;
     protected Time finished;
 
-    public MABTeam(MonsterArmyBattle mab, @NotNull Triple<World, World, World> baseCollectionWorlds, @NotNull Collection<Player> players, @Nullable Map<Material, Material> randomMaterialMap) {
+    public MABTeam(MonsterArmyBattle mab, @NotNull Collection<Player> players, @Nullable Map<Material, Material> randomMaterialMap) {
         this.uuid = UUID.randomUUID();
         this.mab = mab;
 
@@ -57,9 +55,10 @@ public class MABTeam {
         this.players.addAll(players.stream().map(p -> new MABPlayer(p, this, randomMaterials)).toList());
 
         this.collectionWorlds = Triple.of(
-                Bukkit.createWorld(WorldCreator.name("mab-team-collection-" + uuid).copy(baseCollectionWorlds.left())),
-                Bukkit.createWorld(WorldCreator.name("mab-team-collection-nether-" + uuid).copy(baseCollectionWorlds.middle())),
-                Bukkit.createWorld(WorldCreator.name("mab-team-collection-end-" + uuid).copy(baseCollectionWorlds.right())));
+                loadWorldAsync("base-collection", "mab-team-collection-" + uuid),
+                loadWorldAsync("base-collection-nether", "mab-collection-nether-" + uuid),
+                loadWorldAsync("base-collection-end", "mab-collection-end-" + uuid));
+        battleWorld = loadWorldAsync("base-battle", "mab-team-battle-" + uuid);
 
         if (!collectionWorlds.isFull() || battleWorld == null)
             throw new RuntimeException("Worlds could not be created.");
@@ -257,5 +256,16 @@ public class MABTeam {
 
     private Stream<LivingEntity> entitiesRemaining() {
         return battleWorld.getLivingEntities().stream().filter(e -> e.hasMetadata("battle"));
+    }
+
+    private World loadWorldAsync(String base, String target) {
+        Bukkit.getAsyncScheduler().runNow(TheGentleChallenges.PLUGIN, t -> {
+            try {
+                WorldUtils.copy(base, target);
+            } catch (IOException e) {
+                TheGentleChallenges.LOG.error("Failed to copy world.", e);
+            }
+        });
+        return Bukkit.createWorld(WorldCreator.name(target).keepSpawnLoaded(TriState.FALSE));
     }
 }

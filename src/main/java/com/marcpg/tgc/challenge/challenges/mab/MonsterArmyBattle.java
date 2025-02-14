@@ -2,9 +2,9 @@ package com.marcpg.tgc.challenge.challenges.mab;
 
 import com.destroystokyo.paper.event.player.PlayerPostRespawnEvent;
 import com.marcpg.libpg.storing.tuple.triple.Triple;
-import com.marcpg.tgc.Configuration;
 import com.marcpg.tgc.TheGentleChallenges;
 import com.marcpg.tgc.challenge.Challenge;
+import com.marcpg.tgc.util.Configuration;
 import io.papermc.paper.event.entity.EntityPortalReadyEvent;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
@@ -181,10 +181,13 @@ public class MonsterArmyBattle extends Challenge implements Listener {
         teams = new LinkedHashMap<>();
         players = new LinkedHashMap<>();
 
-        Triple<World, World, World> collectionWorlds = Triple.of(
-                Bukkit.createWorld(WorldCreator.name("base-collection")),
-                Bukkit.createWorld(WorldCreator.name("base-collection-nether")),
-                Bukkit.createWorld(WorldCreator.name("base-collection-end")));
+        if (!new File(Bukkit.getWorldContainer(), "base-collection").exists()) {
+            Triple<World, World, World> collectionWorlds = Triple.of(
+                    Bukkit.createWorld(WorldCreator.name("base-collection")),
+                    Bukkit.createWorld(WorldCreator.name("base-collection-nether").environment(World.Environment.NETHER)),
+                    Bukkit.createWorld(WorldCreator.name("base-collection-end").environment(World.Environment.THE_END)));
+            collectionWorlds.all(w -> Bukkit.unloadWorld((World) w, true));
+        }
 
         Map<Material, Material> randomMaterials = Configuration.MAB_ITEM_RANDOMIZATION == RandomizerType.GLOBAL ? randomShuffle(UUID.randomUUID()) : null;
 
@@ -196,14 +199,14 @@ public class MonsterArmyBattle extends Challenge implements Listener {
             int teamSize = Math.ceilDiv(onlinePlayers.size(), 2);
             for (int i = 0; i < onlinePlayers.size(); i += teamSize) {
                 List<Player> teamPlayers = onlinePlayers.subList(i, Math.min(i + teamSize, onlinePlayers.size()));
-                MABTeam team = new MABTeam(this, collectionWorlds, teamPlayers, randomMaterials);
+                MABTeam team = new MABTeam(this, teamPlayers, randomMaterials);
                 teams.put(team.uuid, team);
                 team.players.forEach(t -> players.put(t.uuid, t));
             }
         } else {
             //noinspection unchecked
             for (List<String> teamPlayers : (List<List<String>>) Objects.requireNonNull(Configuration.CONFIG.getList("teams"))) {
-                MABTeam team = new MABTeam(this, collectionWorlds, teamPlayers.stream().map(Bukkit::getPlayer).filter(Objects::nonNull).toList(), randomMaterials);
+                MABTeam team = new MABTeam(this, teamPlayers.stream().map(Bukkit::getPlayer).filter(Objects::nonNull).toList(), randomMaterials);
                 teams.put(team.uuid, team);
                 team.players.forEach(t -> players.put(t.uuid, t));
             }
