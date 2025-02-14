@@ -33,7 +33,7 @@ public class MABPlayer {
     public final Map<EntityType, List<EntitySnapshot>> entities = new HashMap<>();
     public final Waves waves = new Waves();
 
-    protected boolean configured;
+    public boolean configured;
 
     public MABPlayer(@NotNull Player player, MABTeam team, @Nullable Map<Material, Material> randomMaterialMap) {
         this(player.getUniqueId(), team, randomMaterialMap);

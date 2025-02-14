@@ -90,6 +90,7 @@ public final class Commands {
                 .then(LiteralArgumentBuilder.<CommandSourceStack>literal("mab")
                         .requires(source -> ChallengeManager.CURRENT_CHALLENGE instanceof MonsterArmyBattle)
                         .then(LiteralArgumentBuilder.<CommandSourceStack>literal("remove-player")
+                                .requires(source -> source.getSender().isOp())
                                 .then(RequiredArgumentBuilder.<CommandSourceStack, String>argument("player", StringArgumentType.word())
                                         .suggests((context, builder) -> {
                                             if (ChallengeManager.CURRENT_CHALLENGE instanceof MonsterArmyBattle mab)
@@ -118,6 +119,7 @@ public final class Commands {
                                 )
                         )
                         .then(LiteralArgumentBuilder.<CommandSourceStack>literal("tp-world")
+                                .requires(source -> source.getSender().isOp())
                                 .then(RequiredArgumentBuilder.<CommandSourceStack, PlayerSelectorArgumentResolver>argument("player", ArgumentTypes.player())
                                         .then(RequiredArgumentBuilder.<CommandSourceStack, String>argument("target", StringArgumentType.word())
                                                 .suggests((context, builder) -> {
@@ -167,6 +169,26 @@ public final class Commands {
                                                 )
                                         )
                                 )
+                        )
+                        .then(LiteralArgumentBuilder.<CommandSourceStack>literal("config")
+                                .executes(context -> {
+                                    if (!(context.getSource().getSender() instanceof Player player) || !(ChallengeManager.CURRENT_CHALLENGE instanceof MonsterArmyBattle mab)) return 1;
+
+                                    if (mab.currentStage() != MonsterArmyBattle.Stage.CONFIGURATION) {
+                                        player.sendMessage(Component.text("Das Monster-Army-Battle ist nicht in der Konfiguration!", NamedTextColor.RED));
+                                        return 1;
+                                    }
+
+                                    MABPlayer p = mab.players.get(player.getUniqueId());
+                                    if (p == null) {
+                                        player.sendMessage(Component.text("Du bist nicht im Monster-Army-Battle!", NamedTextColor.RED));
+                                        return 1;
+                                    }
+
+                                    p.configured = false;
+                                    p.openConfiguration();
+                                    return 1;
+                                })
                         )
                 )
                 .then(LiteralArgumentBuilder.<CommandSourceStack>literal("end")
