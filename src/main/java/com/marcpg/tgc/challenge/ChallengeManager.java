@@ -1,9 +1,6 @@
 package com.marcpg.tgc.challenge;
 
-import com.marcpg.tgc.challenge.challenges.AggressiveMobsChallenge;
-import com.marcpg.tgc.challenge.challenges.CustomChallenge;
-import com.marcpg.tgc.challenge.challenges.DeadlyFoodChallenge;
-import com.marcpg.tgc.challenge.challenges.ZeroHeartsChallenge;
+import com.marcpg.tgc.challenge.challenges.*;
 import com.marcpg.tgc.challenge.challenges.mab.MonsterArmyBattle;
 
 import java.util.HashMap;
@@ -11,6 +8,7 @@ import java.util.Map;
 
 public final class ChallengeManager {
     public static final Map<String, Class<? extends Challenge>> AVAILABLE_CHALLENGES = Map.of(
+            "fishing", FishingChallenge.class,
             "aggressive-mobs", AggressiveMobsChallenge.class,
             "custom", CustomChallenge.class,
             "deadly-food", DeadlyFoodChallenge.class,
