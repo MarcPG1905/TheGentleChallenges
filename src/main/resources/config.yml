@@ -1,3 +1,33 @@
+#################################################################################
+##___________________________  _____  ____   ____  ____________________________##
+##___________________________ |_   _|/ ___| / ___| ____________________________##
+##___________________________   | | | |  _ | |     ____________________________##
+##___________________________   | | | |_| || |___  ____________________________##
+##___________________________   |_|  \____| \____| ____________________________##
+##                             TheGentleChallenges                             ##
+##                                Configuration                                ##
+##                                                                             ##
+##   WEBSITE:       https://marcpg.com/                                        ##
+##   SOURCE-CODE:   https://github.com/MarcPG1905/TheGentleChallenges          ##
+##   BUGS & ISSUES: https://github.com/MarcPG1905/TheGentleChallenges/issues   ##
+##                                                                             ##
+#################################################################################
+
+
+## If teams are randomized. ##
+random-teams: false
+
+## A list of players for each team. ##
+# This only does something if "random-teams" above is set to false.
+teams:
+  - [ "Example1", "Example2" ]
+  - [ "SomeExample", "YetAnotherExampleUser", "WowAThirdUserInTeam" ]
+  - [ "SomeUserForTeam3", "AnotherOne" ]
+
+
+## The aggressive mobs challenge. ##
+# The keys should be the same as the ones also used in commands.
+# The values are the damage. 2.0 Damage = 1 Heart
 aggressive-mobs:
   cat: 5.5
   cow: 5.0
@@ -16,10 +46,35 @@ aggressive-mobs:
   villager: 5.2
   wandering_trader: 5.0
 
+
+## The monster army battles. ##
 monster-army-battle:
-  randomizer-mode: team # global; team; player
-  collection-time-seconds: 3600 # 3600s = 1h
+
+  # How the item randomizer is seperated.
+  #  Available:
+  #    | -> global  : everyone has the same
+  #    | -> team    : each team has their own
+  #    | -> player  : each player has their own
+  randomizer-mode: team
+
+  # How/when players respawn if they died in battle.
+  #  Available:
+  #    | -> round   : after each round/wave
+  #    | -> time    : after a specified amount of time passed
+  respawn-mode: round
+
+  # The time that has to pass before a player respawns.
+  # This only does something if "respawn-mode" above is set to "time".
+  respawn-time: 0
+
+  # How long the collection time lasts.
+  # This is specified in seconds.
+  collection-time-seconds: 3600
+
+  # The location inside the battle arena where players will spawn.
   arena-spawn: [ -44, 71, 104 ]
+
+  # Points of a polygon defying the monster spawn area.
   arena-bounds:
     - [ 10, 55 ]
     - [ -35, 55 ]
@@ -29,10 +84,3 @@ monster-army-battle:
     - [ 10, 155 ]
     - [ 45, 115 ]
     - [ 45, 90 ]
-
-
-random-teams: false
-teams:
-  - [ "Example1", "Example2" ]
-  - [ "SomeExample", "YetAnotherExampleUser", "WowAThirdUserInTeam" ]
-  - [ "SomeUserForTeam3", "AnotherOne" ]
