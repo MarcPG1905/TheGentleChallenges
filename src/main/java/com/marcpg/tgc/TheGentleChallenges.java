@@ -32,7 +32,7 @@ public final class TheGentleChallenges extends JavaPlugin implements Listener {
         LOG = getSLF4JLogger();
         DATA_DIR = getDataPath();
 
-        // Initialize legacy material support just in case.
+        // noinspection deprecation - Initialize legacy material support just in case.
         new ItemStack(Material.LEGACY_AIR);
 
         getServer().getPluginManager().registerEvents(this, this);
@@ -41,7 +41,7 @@ public final class TheGentleChallenges extends JavaPlugin implements Listener {
             event.registrar().register(Commands.resourcePackCommand(), "Manage the applied texture/resource pack.", List.of("texture-pack"));
         });
 
-        ChallengeManager.PROPERTIES.putAll(JsonUtils.loadSafe(DATA_DIR.resolve("properties.json").toFile(), Map.of()));
+        ChallengeManager.PROPERTIES.putAll(JsonUtils.loadSafe(DATA_DIR.resolve("properties.json").toFile(), Map.of(), Map.class));
     }
 
     @Override

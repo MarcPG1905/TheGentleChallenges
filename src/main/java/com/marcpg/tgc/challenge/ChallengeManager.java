@@ -8,11 +8,13 @@ import java.util.Map;
 
 public final class ChallengeManager {
     public static final Map<String, Class<? extends Challenge>> AVAILABLE_CHALLENGES = Map.of(
-            "fishing", FishingChallenge.class,
             "aggressive-mobs", AggressiveMobsChallenge.class,
             "custom", CustomChallenge.class,
             "deadly-food", DeadlyFoodChallenge.class,
+            "fishing", FishingChallenge.class,
+            "hide-n-seek", HideNSeek.class,
             "monster-army-battle", MonsterArmyBattle.class,
+            "random-world", RandomWorldChallenge.class,
             "zero-hearts", ZeroHeartsChallenge.class);
 
     public static Challenge CURRENT_CHALLENGE;

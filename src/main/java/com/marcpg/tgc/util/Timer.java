@@ -17,6 +17,7 @@ public class Timer {
     private long timerTicks = 0;
     private double phase = 0.0d;
     private boolean reversed = false;
+    private boolean show = true;
 
     public Timer(Challenge challenge) {
         this.challenge = challenge;
@@ -42,12 +43,14 @@ public class Timer {
             phase = -1.0 + (phase - 1.0);
 
         // The actual animation:
-        String text = challenge.running || challenge.beaten ? timer.getPreciselyFormatted() : "Der Timer ist pausiert!";
-        Component actionBarText = MiniMessage.miniMessage().deserialize(String.format("<bold><gradient:%s:%s:%f>%s</gradient></bold>", EFFECT_C1.asHexString(), EFFECT_C2.asHexString(), phase, text));
-        Challenge.forEachPlayer(p -> {
-            p.sendActionBar(actionBarText);
-            challenge.playerTick(p);
-        });
+        if (show) {
+            String text = challenge.running || challenge.beaten ? timer.getPreciselyFormatted() : "Der Timer ist pausiert!";
+            Component actionBarText = MiniMessage.miniMessage().deserialize(String.format("<bold><gradient:%s:%s:%f>%s</gradient></bold>", EFFECT_C1.asHexString(), EFFECT_C2.asHexString(), phase, text));
+            Challenge.forEachPlayer(p -> {
+                p.sendActionBar(actionBarText);
+                challenge.playerTick(p);
+            });
+        }
     }
 
     public final Time timer() {
@@ -60,5 +63,13 @@ public class Timer {
 
     public final void reversed(boolean reversed) {
         this.reversed = reversed;
+    }
+
+    public final boolean shows() {
+        return show;
+    }
+
+    public final void show(boolean show) {
+        this.show = show;
     }
 }

@@ -5,6 +5,7 @@ import com.marcpg.libpg.storing.tuple.triple.Triple;
 import com.marcpg.tgc.TheGentleChallenges;
 import com.marcpg.tgc.challenge.Challenge;
 import com.marcpg.tgc.util.Configuration;
+import io.papermc.paper.event.entity.EntityMoveEvent;
 import io.papermc.paper.event.entity.EntityPortalReadyEvent;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
@@ -16,8 +17,10 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.BlockBreakEvent;
+import org.bukkit.event.block.BlockExplodeEvent;
 import org.bukkit.event.block.BlockPlaceEvent;
 import org.bukkit.event.entity.*;
+import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerRespawnEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.metadata.FixedMetadataValue;
@@ -108,7 +111,13 @@ public class MonsterArmyBattle extends Challenge implements Listener {
 
     @EventHandler(ignoreCancelled = true)
     public void onBlockPlace(@NotNull BlockPlaceEvent event) {
-        event.getBlock().setMetadata("player-placed", new FixedMetadataValue(TheGentleChallenges.PLUGIN, true));
+        if (currentStage == Stage.BATTLE) {
+            if (event.getBlockPlaced().isLiquid()) {
+                event.getBlock().setMetadata("player-placed", new FixedMetadataValue(TheGentleChallenges.PLUGIN, true));
+            } else {
+                event.setCancelled(true);
+            }
+        }
     }
 
     @Override
@@ -162,6 +171,31 @@ public class MonsterArmyBattle extends Challenge implements Listener {
             if (team == null || team.finished != null) return;
 
             team.updateBossBar();
+        }
+    }
+
+    @EventHandler(ignoreCancelled = true)
+    public void onEntityMove(@NotNull EntityMoveEvent event) {
+        if (event.getEntityType() == EntityType.PLAYER || currentStage != Stage.BATTLE) return;
+        if (!Configuration.MAB_SPAWN_AREA.contains(event.getTo().x(), event.getTo().z()))
+            event.setCancelled(true);
+    }
+
+    @EventHandler(ignoreCancelled = true)
+    public void onBlockExplode(BlockExplodeEvent event) {
+        if (currentStage == Stage.BATTLE) {
+            event.blockList().clear();
+            event.setCancelled(true);
+        }
+    }
+
+    @EventHandler(ignoreCancelled = true)
+    public void onPlayerJoin(PlayerJoinEvent event) {
+        if (currentStage == Stage.BATTLE) {
+            MABPlayer mabPlayer = players.get(event.getPlayer().getUniqueId());
+            if (mabPlayer == null) return;
+
+            mabPlayer.team.bossBar.addViewer(event.getPlayer());
         }
     }
 

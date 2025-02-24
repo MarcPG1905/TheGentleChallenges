@@ -1,0 +1,132 @@
+{
+  "version": "0.1.0",
+  "challenges": {
+    "aggressive-mobs": {
+      "name": "Aggressive Mobs",
+      "description": "All mobs are always aggressive towards players.",
+      "options": {}
+    },
+    "custom": {
+      "name": "Custom",
+      "description": "A custom challenge with no logic, except for the timer.",
+      "options": {}
+    },
+    "deadly-food": {
+      "name": "Deadly Food",
+      "description": "Eating or drinking will make you permanently lose one heart.",
+      "options": {
+        "amount": {
+          "name": "Amount",
+          "description": "The amount of hearts to lose.",
+          "default": 1.0,
+          "type": "double"
+        }
+      }
+    },
+    "monster-army-battle": {
+      "name": "Monster Army Battle",
+      "description": "Players collect mobs and items, which the opponents will need to fight later on.",
+      "options": {
+        "teams": {
+          "name": "Teams",
+          "description": "The number of teams.",
+          "type": "byte",
+          "default": 2
+        },
+        "team-distribution": {
+          "name": "Team Distribution",
+          "description": "How the teams should be distributed.",
+          "type": "enum",
+          "default": "Random",
+          "values": [
+            "Random",
+            "Pre-Defined"
+          ]
+        },
+        "collection-time": {
+          "name": "Collection Time",
+          "description": "How long the collection phase will last.",
+          "type": "time",
+          "default": "1h"
+        },
+        "waves": {
+          "name": "Waves",
+          "description": "The amount of waves.",
+          "type": "byte",
+          "default": 3,
+          "min": 1,
+          "max": 10
+        }
+      }
+    },
+    "zero-hearts": {
+      "name": "Zero Hearts",
+      "description": "Players have zero hearts and can only stay alive using absorption.",
+      "options": {
+        "start-duration": {
+          "name": "Start Duration",
+          "description": "How much time players have before their starting heart runs out.",
+          "type": "time",
+          "default": "5min"
+        }
+      }
+    },
+    "block-guessr": {
+      "name": "Block-Guessr",
+      "description": "Geo-Guessr, but inside Minecraft.",
+      "options": {
+        "style": {
+          "name": "Style",
+          "description": "How the guessing view works.",
+          "type": "enum",
+          "default": "3D",
+          "values": [
+            "Screenshot",
+            "3D"
+          ]
+        },
+        "radius": {
+          "name": "Radius",
+          "description": "The radius in chunks of how far spots can be from the player's route.",
+          "type": "byte",
+          "default": 8,
+          "min": -1,
+          "max": 64
+        },
+        "accuracy": {
+          "name": "Required Accuracy",
+          "description": "The required accuracy in chunks for the guess to be successful.",
+          "type": "byte",
+          "default": 3,
+          "min": 0,
+          "max": 64
+        },
+        "revealed": {
+          "name": "Revealed",
+          "description": "Which parts of the map should be revealed, or which should be black.",
+          "type": "enum",
+          "default": "Render-Distance",
+          "values": [
+            "Render-Distance",
+            "Guess-Radius",
+            "All"
+          ]
+        }
+      }
+    },
+    "fishing": {
+      "name": "Fishing",
+      "description": "You can only move using a fishing rod and your fists.",
+      "options": {
+        "fishing-multiplier": {
+          "name": "Fishing Multiplier",
+          "description": "How far a fishing rod will pull when railing back in.",
+          "type": "double",
+          "default": 1.0,
+          "min": 0.0,
+          "max": 25.0
+        }
+      }
+    }
+  }
+}

@@ -4,6 +4,7 @@ import com.marcpg.libpg.data.time.Time;
 import com.marcpg.libpg.storing.Cord;
 import com.marcpg.libpg.storing.CordMinecraftAdapter;
 import com.marcpg.libpg.storing.tuple.triple.Triple;
+import com.marcpg.libpg.util.MinecraftTime;
 import com.marcpg.libpg.util.WorldUtils;
 import com.marcpg.tgc.TheGentleChallenges;
 import com.marcpg.tgc.challenge.ChallengeManager;
@@ -19,8 +20,6 @@ import net.kyori.adventure.util.TriState;
 import org.bukkit.*;
 import org.bukkit.entity.*;
 import org.bukkit.metadata.FixedMetadataValue;
-import org.bukkit.potion.PotionEffect;
-import org.bukkit.potion.PotionEffectType;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -55,10 +54,10 @@ public class MABTeam {
         this.players.addAll(players.stream().map(p -> new MABPlayer(p, this, randomMaterials)).toList());
 
         this.collectionWorlds = Triple.of(
-                loadWorldAsync("base-collection", "mab-team-collection-" + uuid),
-                loadWorldAsync("base-collection-nether", "mab-collection-nether-" + uuid),
-                loadWorldAsync("base-collection-end", "mab-collection-end-" + uuid));
-        battleWorld = loadWorldAsync("base-battle", "mab-team-battle-" + uuid);
+                loadWorld("base-collection", "mab-team-collection-" + uuid, false),
+                loadWorld("base-collection-nether", "mab-team-collection-nether-" + uuid, false),
+                loadWorld("base-collection-end", "mab-team-collection-end-" + uuid, false));
+        battleWorld = loadWorld("base-battle", "mab-team-battle-" + uuid, true);
 
         if (!collectionWorlds.isFull() || battleWorld == null)
             throw new RuntimeException("Worlds could not be created.");
@@ -74,6 +73,10 @@ public class MABTeam {
         this.battleWorld.setGameRule(GameRule.DO_MOB_SPAWNING, false);
         this.battleWorld.setGameRule(GameRule.MOB_GRIEFING, false);
         this.battleWorld.setGameRule(GameRule.DO_FIRE_TICK, false);
+
+        this.battleWorld.setTime(MinecraftTime.MIDNIGHT.time);
+        this.battleWorld.setGameRule(GameRule.DO_DAYLIGHT_CYCLE, false);
+        this.battleWorld.setGameRule(GameRule.DO_WEATHER_CYCLE, false);
     }
 
     public void addEntity(LivingEntity entity) {
@@ -118,6 +121,14 @@ public class MABTeam {
                         r.cancel();
                     }
                 }, 20, 20);
+
+                Bukkit.getScheduler().runTaskTimer(TheGentleChallenges.PLUGIN, r -> {
+                    if (finished == null) {
+                        battleWorld.getLivingEntities().stream().filter(e -> !e.hasMetadata("battle") && e.getType() == EntityType.BAT).forEach(Entity::remove);
+                    } else {
+                        r.cancel();
+                    }
+                }, 20, 100);
             }
         }
     }
@@ -134,6 +145,9 @@ public class MABTeam {
         bossBar.name(Component.text(mobsLeft + " Mobs Übrig", TextColor.color(progress, Math.abs(progress - 1.0f), 0.0f)));
         bossBar.progress(Math.clamp(progress, 0.0f, 1.0f));
         bossBar.color(color(progress));
+
+        if (progress <= 0.10f && mab.timer.timer().get() > currentWaveTotal / 1.8)
+            entitiesRemaining().forEach(e -> e.setGlowing(true));
     }
 
     public void update() {
@@ -160,7 +174,6 @@ public class MABTeam {
                 }
             }));
 
-            int oldWave = wave;
             currentWaveEntities = waves.entities(wave);
             currentWaveTotal = currentWaveEntities.size();
 
@@ -171,12 +184,11 @@ public class MABTeam {
                 playerActions(p -> p.sendMessage(Component.text("Diese Wave hat nur ein Monster!", NamedTextColor.YELLOW)));
 
                 spawn(currentWaveEntities.removeLast());
-                scheduleGlowing(oldWave);
+                entitiesRemaining().forEach(e -> e.setGlowing(true));
                 updateBossBar();
             } else {
                 Bukkit.getScheduler().runTaskTimer(TheGentleChallenges.PLUGIN, r -> {
                     if (currentWaveEntities.isEmpty()) {
-                        scheduleGlowing(oldWave);
                         r.cancel();
                         update();
                     } else {
@@ -186,15 +198,6 @@ public class MABTeam {
                 }, 20, 10);
             }
         }
-    }
-
-    private void scheduleGlowing(int oldWave) {
-        Bukkit.getScheduler().runTaskLater(TheGentleChallenges.PLUGIN, () -> {
-            if (wave == oldWave) {
-                entitiesRemaining().forEach(e -> e.addPotionEffect(new PotionEffect(PotionEffectType.GLOWING, 1200, 0)));
-                scheduleGlowing(oldWave);
-            }
-        }, 1200); // 1 Minute
     }
 
     private BossBar.Color color(float progress) {
@@ -207,8 +210,10 @@ public class MABTeam {
     public void done(Time time) {
         if (finished != null) return;
 
-        if (mab.teams.values().stream().allMatch(t -> t.finished == null))
+        if (mab.teams.values().stream().allMatch(t -> t.finished == null)) {
             ChallengeManager.PROPERTIES.put("last-winner", GsonComponentSerializer.gson().serialize(Component.text(String.join(" & ", players.stream().map(p -> Bukkit.getOfflinePlayer(p.uuid).getName()).toList()), NamedTextColor.GREEN)));
+            ChallengeManager.PROPERTIES.put("last-winner-time", time.get());
+        }
 
         finished = new Time(time);
         playerActions(p -> {
@@ -239,17 +244,19 @@ public class MABTeam {
 
     private void spawn(@NotNull EntitySnapshot snapshot) {
         Entity e = snapshot.createEntity(battleWorld);
-        if (!(e instanceof LivingEntity)) return;
+        if (!(e instanceof LivingEntity livingEntity)) return;
 
-        e.setMetadata("battle", new FixedMetadataValue(TheGentleChallenges.PLUGIN, true));
-        MonsterArmyBattle.GLOW_TEAM.addEntity(e);
+        livingEntity.setMetadata("battle", new FixedMetadataValue(TheGentleChallenges.PLUGIN, true));
+        MonsterArmyBattle.GLOW_TEAM.addEntity(livingEntity);
 
-        if (e instanceof Zombie zombie)
+        if (livingEntity instanceof Zombie zombie)
             zombie.setShouldBurnInDay(false);
-        if (e instanceof AbstractSkeleton skeleton)
+        if (livingEntity instanceof AbstractSkeleton skeleton)
             skeleton.setShouldBurnInDay(false);
-        if (e instanceof Phantom phantom)
+        if (livingEntity instanceof Phantom phantom)
             phantom.setShouldBurnInDay(false);
+
+        livingEntity.setRemoveWhenFarAway(false);
 
         e.spawnAt(randomSpawnLocation(battleWorld));
     }
@@ -258,14 +265,16 @@ public class MABTeam {
         return battleWorld.getLivingEntities().stream().filter(e -> e.hasMetadata("battle"));
     }
 
-    private World loadWorldAsync(String base, String target) {
-        Bukkit.getAsyncScheduler().runNow(TheGentleChallenges.PLUGIN, t -> {
-            try {
-                WorldUtils.copy(base, target);
-            } catch (IOException e) {
-                TheGentleChallenges.LOG.error("Failed to copy world.", e);
-            }
-        });
-        return Bukkit.createWorld(WorldCreator.name(target).keepSpawnLoaded(TriState.FALSE));
+    private World loadWorld(String base, String target, boolean load) {
+        try {
+            WorldUtils.copy(base, target);
+        } catch (IOException e) {
+            TheGentleChallenges.LOG.error("Failed to copy world.", e);
+        }
+        if (load) {
+            return Bukkit.createWorld(WorldCreator.name(target));
+        } else {
+            return Bukkit.createWorld(WorldCreator.name(target).keepSpawnLoaded(TriState.FALSE));
+        }
     }
 }

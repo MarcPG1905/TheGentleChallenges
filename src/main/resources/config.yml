@@ -25,6 +25,62 @@ teams:
   - [ "SomeUserForTeam3", "AnotherOne" ]
 
 
+## The random worlds challenge. ##
+random-worlds:
+
+  # The minimum time in seconds between each world change.
+  interval-min: 300 # 300s = 5min
+
+  # The maximum time in seconds between each world change.
+  interval-max: 600 # 600s = 10min
+
+  # The maximum time in seconds in each world.
+  max-world-time: 300 # 300s = 5min
+
+  # If the inventory is cleared whilst in a random world.
+  clear-inv: true
+
+  # The worlds that are available.
+  worlds:
+    - name: world_name
+      spawn: [ 0, 0, 0 ]
+      title: Some World
+      creator: Cool Name
+    - name: another_world
+      spawn: [ 10, 20, 30 ]
+      title: Another World
+      creator: Player123
+
+
+## The Hide n' Seek game. ##
+hide-n-seek:
+
+  # The seeker's username. If this player is not online, a random player will be chosen.
+  seeker: Player123
+
+  # The spawn inside the Hide n' Seek map.
+  spawn: [ 0, 0, 0 ]
+
+  # The time in seconds that players can hide until the seeker can start searching.
+  hiding-time: 300 # 600s = 10min
+
+  # The maximum time in seconds the hide n' seek will go.
+  total-time: 3600 # 3600s = 1h
+
+  # The time in seconds until hints start appearing.
+  hint-time: 2700 # 2700s = 45min
+
+  # The time in seconds between each hint.
+  hint-interval: 30
+
+  # How the hints work after the "hint-time" has passed.
+  #  Available:
+  #    | -> none  : nothing will happen
+  #    | -> glow  : all players glow for a few seconds
+  #    | -> sound : all players play a sound
+  hint-type: glow
+
+
 ## The aggressive mobs challenge. ##
 # The keys should be the same as the ones also used in commands.
 # The values are the damage. 2.0 Damage = 1 Heart

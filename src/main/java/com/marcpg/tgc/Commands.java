@@ -3,6 +3,7 @@ package com.marcpg.tgc;
 import com.marcpg.libpg.data.time.Time;
 import com.marcpg.tgc.challenge.Challenge;
 import com.marcpg.tgc.challenge.ChallengeManager;
+import com.marcpg.tgc.challenge.challenges.RandomWorldChallenge;
 import com.marcpg.tgc.challenge.challenges.ZeroHeartsChallenge;
 import com.marcpg.tgc.challenge.challenges.mab.MABPlayer;
 import com.marcpg.tgc.challenge.challenges.mab.MonsterArmyBattle;
@@ -88,7 +89,6 @@ public final class Commands {
                         )
                 )
                 .then(LiteralArgumentBuilder.<CommandSourceStack>literal("mab")
-                        .requires(source -> ChallengeManager.CURRENT_CHALLENGE instanceof MonsterArmyBattle)
                         .then(LiteralArgumentBuilder.<CommandSourceStack>literal("remove-player")
                                 .requires(source -> source.getSender().isOp())
                                 .then(RequiredArgumentBuilder.<CommandSourceStack, String>argument("player", StringArgumentType.word())
@@ -99,21 +99,21 @@ public final class Commands {
                                         })
                                         .executes(context -> {
                                             if (!(ChallengeManager.CURRENT_CHALLENGE instanceof MonsterArmyBattle mab)) {
-                                                context.getSource().getSender().sendMessage(Component.text("Es läuft gerade kein Monster-Army-Battle."));
+                                                context.getSource().getSender().sendMessage(Component.text("Es läuft gerade kein Monster-Army-Battle.", NamedTextColor.RED));
                                                 return 1;
                                             }
 
-                                            OfflinePlayer target = Bukkit.getOfflinePlayer(context.getArgument("target", String.class));
+                                            OfflinePlayer target = Bukkit.getOfflinePlayer(context.getArgument("player", String.class));
                                             MABPlayer mabTarget = mab.players.get(target.getUniqueId());
                                             if (mabTarget == null) {
-                                                context.getSource().getSender().sendMessage(Component.text("Der Spieler " + target.getName() + " ist nicht im Monster-Army-Battle."));
+                                                context.getSource().getSender().sendMessage(Component.text("Der Spieler " + target.getName() + " ist nicht im Monster-Army-Battle.", NamedTextColor.RED));
                                                 return 1;
                                             }
 
                                             mab.players.remove(mabTarget.uuid);
                                             mab.teams.forEach((u, t) -> t.players.remove(mabTarget));
 
-                                            context.getSource().getSender().sendMessage(Component.text("Der Spieler " + target.getName() + " ist nun nicht mehr im Monster-Army-Battle."));
+                                            context.getSource().getSender().sendMessage(Component.text("Der Spieler " + target.getName() + " ist nun nicht mehr im Monster-Army-Battle.", NamedTextColor.YELLOW));
                                             return 1;
                                         })
                                 )
@@ -135,7 +135,7 @@ public final class Commands {
                                                                 })
                                                                 .executes(context -> {
                                                                     if (!(ChallengeManager.CURRENT_CHALLENGE instanceof MonsterArmyBattle mab)) {
-                                                                        context.getSource().getSender().sendMessage(Component.text("Es läuft gerade kein Monster-Army-Battle."));
+                                                                        context.getSource().getSender().sendMessage(Component.text("Es läuft gerade kein Monster-Army-Battle.", NamedTextColor.RED));
                                                                         return 1;
                                                                     }
 
@@ -144,14 +144,14 @@ public final class Commands {
                                                                     String dimension = context.getArgument("dimension", String.class).toLowerCase();
 
                                                                     if (!DIMENSIONS.contains(dimension)) {
-                                                                        context.getSource().getSender().sendMessage(Component.text("Die Dimension " + dimension + " existiert nicht!"));
+                                                                        context.getSource().getSender().sendMessage(Component.text("Die Dimension " + dimension + " existiert nicht!", NamedTextColor.RED));
                                                                         return 1;
                                                                     }
 
                                                                     OfflinePlayer target = Bukkit.getOfflinePlayer(context.getArgument("target", String.class));
                                                                     MABPlayer mabTarget = mab.players.get(target.getUniqueId());
                                                                     if (mabTarget == null) {
-                                                                        context.getSource().getSender().sendMessage(Component.text("Der Spieler " + target.getName() + " ist nicht im Monster-Army-Battle."));
+                                                                        context.getSource().getSender().sendMessage(Component.text("Der Spieler " + target.getName() + " ist nicht im Monster-Army-Battle.", NamedTextColor.RED));
                                                                         return 1;
                                                                     }
 
@@ -162,7 +162,7 @@ public final class Commands {
                                                                         default -> mabTarget.team.collectionWorlds.left();
                                                                     };
                                                                     player.teleport(new Location(world, position.x(), position.y(), position.z()));
-                                                                    context.getSource().getSender().sendMessage(Component.text("Der Spieler " + player.getName() + " wurde in die Welt von " + target.getName() + " teleportiert."));
+                                                                    context.getSource().getSender().sendMessage(Component.text("Der Spieler " + player.getName() + " wurde in die Welt von " + target.getName() + " teleportiert.", NamedTextColor.YELLOW));
                                                                     return 1;
                                                                 })
                                                         )
@@ -172,7 +172,12 @@ public final class Commands {
                         )
                         .then(LiteralArgumentBuilder.<CommandSourceStack>literal("config")
                                 .executes(context -> {
-                                    if (!(context.getSource().getSender() instanceof Player player) || !(ChallengeManager.CURRENT_CHALLENGE instanceof MonsterArmyBattle mab)) return 1;
+                                    if (!(ChallengeManager.CURRENT_CHALLENGE instanceof MonsterArmyBattle mab)) {
+                                        context.getSource().getSender().sendMessage(Component.text("Es läuft gerade kein Monster-Army-Battle.", NamedTextColor.RED));
+                                        return 1;
+                                    }
+
+                                    if (!(context.getSource().getSender() instanceof Player player)) return 1;
 
                                     if (mab.currentStage() != MonsterArmyBattle.Stage.CONFIGURATION) {
                                         player.sendMessage(Component.text("Das Monster-Army-Battle ist nicht in der Konfiguration!", NamedTextColor.RED));
@@ -187,6 +192,65 @@ public final class Commands {
 
                                     p.configured = false;
                                     p.openConfiguration();
+                                    return 1;
+                                })
+                        )
+                        .then(LiteralArgumentBuilder.<CommandSourceStack>literal("stage")
+                                .then(RequiredArgumentBuilder.<CommandSourceStack, String>argument("stage", StringArgumentType.word())
+                                        .suggests((context, builder) -> {
+                                            for (MonsterArmyBattle.Stage s : MonsterArmyBattle.Stage.values())
+                                                builder.suggest(s.name().toLowerCase());
+                                            return builder.buildFuture();
+                                        })
+                                        .executes(context -> {
+                                            if (!(ChallengeManager.CURRENT_CHALLENGE instanceof MonsterArmyBattle mab)) {
+                                                context.getSource().getSender().sendMessage(Component.text("Es läuft gerade kein Monster-Army-Battle.", NamedTextColor.RED));
+                                                return 1;
+                                            }
+
+                                            MonsterArmyBattle.Stage stage = MonsterArmyBattle.Stage.valueOf(context.getArgument("stage", String.class).toUpperCase());
+                                            switch (stage) {
+                                                case COLLECTION -> mab.initLogic();
+                                                case CONFIGURATION -> mab.startConfiguration();
+                                                case BATTLE -> mab.startBattle();
+                                            }
+                                            return 1;
+                                        })
+                                )
+                        )
+                )
+                .then(LiteralArgumentBuilder.<CommandSourceStack>literal("rw")
+                        .then(LiteralArgumentBuilder.<CommandSourceStack>literal("success")
+                                .requires(source -> source.getSender().isOp())
+                                .executes(context -> {
+                                    if (!(ChallengeManager.CURRENT_CHALLENGE instanceof RandomWorldChallenge rw)) {
+                                        context.getSource().getSender().sendMessage(Component.text("Es läuft gerade keine Random-World-Challenge.", NamedTextColor.RED));
+                                        return 1;
+                                    }
+
+                                    if (!rw.inWorld()) {
+                                        context.getSource().getSender().sendMessage(Component.text("Die challenge ist gerade nicht in einer Random-World.", NamedTextColor.YELLOW));
+                                        return 1;
+                                    }
+
+                                    rw.success();
+                                    return 1;
+                                })
+                        )
+                        .then(LiteralArgumentBuilder.<CommandSourceStack>literal("fail")
+                                .requires(source -> source.getSender().isOp())
+                                .executes(context -> {
+                                    if (!(ChallengeManager.CURRENT_CHALLENGE instanceof RandomWorldChallenge rw)) {
+                                        context.getSource().getSender().sendMessage(Component.text("Es läuft gerade keine Random-World-Challenge.", NamedTextColor.RED));
+                                        return 1;
+                                    }
+
+                                    if (!rw.inWorld()) {
+                                        context.getSource().getSender().sendMessage(Component.text("Die challenge ist gerade nicht in einer Random-World.", NamedTextColor.YELLOW));
+                                        return 1;
+                                    }
+
+                                    rw.fail();
                                     return 1;
                                 })
                         )
@@ -207,7 +271,9 @@ public final class Commands {
                             if (!ChallengeManager.PROPERTIES.containsKey("last-winner")) {
                                 context.getSource().getSender().sendMessage(Component.text("Es gibt gerade keinen Gewinner!", NamedTextColor.RED));
                             } else {
-                                Bukkit.getServer().showTitle(Title.title(GsonComponentSerializer.gson().deserialize((String) ChallengeManager.PROPERTIES.get("last-winner")), Component.text("Hat die Challenge gewonnen!", NamedTextColor.GRAY)));
+                                String winner = (String) ChallengeManager.PROPERTIES.get("last-winner");
+                                Bukkit.getServer().showTitle(Title.title(GsonComponentSerializer.gson().deserialize(winner),
+                                        Component.text((winner.contains(" & ") ? "Hat" : "Haben") + " die challenge in " + Time.preciselyFormat((int) ChallengeManager.PROPERTIES.get("last-winner-time")) + " gewonnen!", NamedTextColor.GRAY)));
                             }
                             return 1;
                         })

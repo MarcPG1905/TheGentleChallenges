@@ -19,7 +19,6 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.player.PlayerFishEvent;
 import org.bukkit.event.player.PlayerMoveEvent;
-import org.bukkit.util.Vector;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.List;
@@ -63,6 +62,7 @@ public class FishingChallenge extends Challenge implements Listener {
         event.setCancelled(true);
     }
 
+    @SuppressWarnings("deprecation")
     @EventHandler(ignoreCancelled = true)
     public void onPlayerMove(@NotNull PlayerMoveEvent event) {
         Location from = event.getFrom();
@@ -70,7 +70,6 @@ public class FishingChallenge extends Challenge implements Listener {
         if (from.getWorld() != to.getWorld()) return;
         if (from.getX() == to.getX() && from.getZ() == to.getZ()) return;
 
-        Vector v = event.getPlayer().getVelocity();
         if (event.getPlayer().isOnGround() && allowed.containsKey(event.getPlayer()) && allowed.get(event.getPlayer()) + 1000 < System.currentTimeMillis()) {
             allowed.remove(event.getPlayer());
             return;
